@@ -11,16 +11,7 @@ import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.MethodChannel;
 
 public class NotificationPermissionsPlugin implements FlutterPlugin, ActivityAware {
-  @SuppressWarnings("deprecation")
-  public static void registerWith(io.flutter.plugin.common.PluginRegistry.Registrar registrar) {
-    final NotificationPermissionsPlugin plugin = new NotificationPermissionsPlugin();
-    plugin.onAttachedToEngine(registrar.context(), registrar.messenger());
-
-    if (registrar.activity() != null) {
-      plugin.onActivityChanged(registrar.activity());
-    }
-  }
-
+  
   @Nullable
   private MethodChannel channel;
 
@@ -29,7 +20,10 @@ public class NotificationPermissionsPlugin implements FlutterPlugin, ActivityAwa
 
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
-    onAttachedToEngine(binding.getApplicationContext(), binding.getBinaryMessenger());
+    // Create MethodChannel for communication with Flutter
+    channel = new MethodChannel(binding.getBinaryMessenger(), "notification_permissions");
+    methodCallHandler = new MethodCallHandlerImpl(binding.getApplicationContext());
+    channel.setMethodCallHandler(methodCallHandler);
   }
 
   @Override
@@ -40,14 +34,9 @@ public class NotificationPermissionsPlugin implements FlutterPlugin, ActivityAwa
     channel = null;
   }
 
-  private void onAttachedToEngine(Context applicationContext, BinaryMessenger messenger) {
-    channel = new MethodChannel(messenger, "notification_permissions");
-    methodCallHandler = new MethodCallHandlerImpl(applicationContext);
-    channel.setMethodCallHandler(methodCallHandler);
-  }
-
   @Override
   public void onAttachedToActivity(@NonNull ActivityPluginBinding binding) {
+    // Set activity for method handler
     onActivityChanged(binding.getActivity());
   }
 
